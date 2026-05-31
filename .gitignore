@@ -1,0 +1,6 @@
+**/__pycache__/
+*.pyc
+edge/ColdChain_edge.db
+*.db
+docker/ColdChain_edge.db
+*.db

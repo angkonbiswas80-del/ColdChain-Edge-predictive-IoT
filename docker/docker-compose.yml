@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # Helper Init-Container to securely bootstrap Mosquitto configuration
+  mosquitto-init:
+    image: alpine:latest
+    container_name: coldchain_mqtt_init
+    volumes:
+      - mosquitto_config:/mosquitto/config
+    command: sh -c "echo 'listener 1883 0.0.0.0' > /mosquitto/config/mosquitto.conf && echo 'allow_anonymous true' >> /mosquitto/config/mosquitto.conf"
+
+  # 1. MQTT Message Broker (Eclipse Mosquitto)
+  mosquitto:
+    image: eclipse-mosquitto:2.0.15
+    container_name: coldchain_mqtt_broker
+    ports:
+      - "1883:1883"   # Standard unencrypted MQTT port
+      - "9001:9001"   # MQTT over WebSockets port
+    volumes:
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+      - mosquitto_config:/mosquitto/config
+    command: mosquitto -c /mosquitto/config/mosquitto.conf
+    depends_on:
+      mosquitto-init:
+        condition: service_completed_successfully
+
+  # 2. Time-Series Database (InfluxDB v2)
+  influxdb:
+    image: influxdb:2.7.1
+    container_name: coldchain_influxdb
+    ports:
+      - "8086:8086"   # InfluxDB Web UI and API port
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+      - influxdb_config:/etc/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=ColdChainSecurePassword2026
+      - DOCKER_INFLUXDB_INIT_ORG=ColdChainOrg
+      - DOCKER_INFLUXDB_INIT_BUCKET=telemetry_bucket
+
+  # 3. Observability Platform (Grafana)
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: coldchain_grafana
+    ports:
+      - "3000:3000"   # Grafana Web Dashboard port
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=grafana_admin
+    depends_on:
+      - influxdb
+
+volumes:
+  mosquitto_data:
+  mosquitto_log:
+  mosquitto_config:
+  influxdb_data:
+  influxdb_config:
+  grafana_data:
