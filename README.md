@@ -58,8 +58,9 @@ Real-time synchronized data logs capturing system-generated risk statuses (NORMA
 ## 🛠️ Tech Stack
 
 - **Languages:** Python
-- **IoT & Protocols:** MQTT (Paho-MQTT), Edge Simulation
-- **Database:** SQLite (Local Buffering), InfluxDB v2.x (Cloud Time-Series)
+- **IoT & Protocols:** MQTT (Paho-MQTT), Edge Computing
+- **Edge AI & TinyML:** Lightweight anomaly detection & predictive risk alerting
+- **Database:** SQLite (Local Buffering), InfluxDB (Cloud Storage)
 - **Containerization:** Docker & Docker Compose
 - **Visualization:** Grafana
 
